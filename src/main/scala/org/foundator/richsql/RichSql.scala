@@ -266,7 +266,7 @@ object RichSql {
                 prefixed -> (fieldType, optional)
             }
             val values = for((fieldName, (fieldType, optional)) <- fields) yield {
-                val runtimeType = if(fieldType.baseClasses == List(typeOf[AnyVal].typeSymbol)) fieldType.members.head.info
+                val runtimeType = if(fieldType.baseClasses == List(typeOf[AnyVal].typeSymbol)) fieldType.members.head.info else fieldType
                 val option =
                     if(runtimeType == typeOf[List[String]]) getStringArray(fieldName).map(_.toList)
                     else if(runtimeType == typeOf[Seq[String]]) getStringArray(fieldName).map(_.toSeq)
