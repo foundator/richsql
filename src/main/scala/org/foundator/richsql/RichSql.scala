@@ -251,6 +251,7 @@ object RichSql {
         def getObject[T <: Product : TypeTag] : Option[T] = getPrefixedObject[T]("")
 
         def getPrefixedObject[T <: Product : TypeTag](prefix : String) : Option[T] = {
+            val mirror = runtimeMirror(getClass.getClassLoader)
             val companion = typeOf[T].companion
             val apply = companion.member(TermName("apply")).asMethod
             val fields = for {
@@ -266,7 +267,7 @@ object RichSql {
                 prefixed -> (fieldType, optional)
             }
             val values = for((fieldName, (fieldType, optional)) <- fields) yield {
-                val runtimeType = if(fieldType.baseClasses == List(typeOf[AnyVal].typeSymbol)) fieldType.members.head.info else fieldType
+                val runtimeType = if(fieldType.erasure.weak_<:<(typeOf[AnyVal])) fieldType.erasure else fieldType
                 val option =
                     if(runtimeType == typeOf[List[String]]) getStringArray(fieldName).map(_.toList)
                     else if(runtimeType == typeOf[Seq[String]]) getStringArray(fieldName).map(_.toSeq)
@@ -285,10 +286,15 @@ object RichSql {
                     option
                 } else {
                     if(option.isEmpty) return None
-                    option.get
+                    if(runtimeType != fieldType) {
+                        val valueClass = mirror.runtimeClass(fieldType)
+                        val runtimeClass = mirror.runtimeClass(runtimeType)
+                        valueClass.getConstructor(runtimeClass).newInstance(option.get.asInstanceOf[AnyRef])
+                    } else {
+                        option.get
+                    }
                 }
             }
-            val mirror = runtimeMirror(getClass.getClassLoader)
             val companionClass = mirror.runtimeClass(companion)
             val companionInstance = companionClass.newInstance()
             val applyMethod = companionClass.getMethods.find(_.getName == "apply").get
