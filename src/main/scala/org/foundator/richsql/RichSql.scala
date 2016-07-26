@@ -9,7 +9,7 @@ import scala.Array
 import scala.collection.mutable.ListBuffer
 import org.joda.time.{Instant, ReadableInstant}
 import org.intellij.lang.annotations.Language
-
+import scala.reflect.runtime.universe._
 
 object RichSql {
 
@@ -246,6 +246,51 @@ object RichSql {
 
         def getInputStream(columnLabel: String): Option[InputStream] = {
             get(_.getBinaryStream(columnLabel))
+        }
+
+        def getObject[T <: Product : TypeTag](prefix : String = "") : Option[T] = {
+            val companion = typeOf[T].companion
+            val apply = companion.member(TermName("apply")).asMethod
+            val fields = for {
+                parameter <- apply.paramLists.head
+            } yield {
+                val (fieldType, optional) = if(parameter.typeSignature.erasure == typeOf[Option[_]].erasure) {
+                    parameter.typeSignature.typeArgs.head -> true
+                } else {
+                    parameter.typeSignature -> false
+                }
+                val name = parameter.name.toString
+                val prefixed = if(prefix.nonEmpty) prefix + name.capitalize else name
+                prefixed -> (fieldType, optional)
+            }
+            val values = for((fieldName, (fieldType, optional)) <- fields) yield {
+                val option =
+                    if(fieldType == typeOf[List[String]]) getStringArray(fieldName).map(_.toList)
+                    else if(fieldType == typeOf[Seq[String]]) getStringArray(fieldName).map(_.toSeq)
+                    else if(fieldType == typeOf[Set[String]]) getStringArray(fieldName).map(_.toSet)
+                    else if(fieldType == typeOf[Array[String]]) getStringArray(fieldName)
+                    else if(fieldType == typeOf[Boolean]) getBoolean(fieldName)
+                    else if(fieldType == typeOf[UUID]) getUuid(fieldName)
+                    else if(fieldType == typeOf[String]) getString(fieldName)
+                    else if(fieldType == typeOf[Int]) getInt(fieldName)
+                    else if(fieldType == typeOf[Long]) getLong(fieldName)
+                    else if(fieldType == typeOf[Double]) getDouble(fieldName)
+                    else if(fieldType == typeOf[Timestamp]) getTimestamp(fieldName)
+                    else if(fieldType == typeOf[Instant]) getInstant(fieldName)
+                    else throw new RuntimeException("Unsupported object field: " + fieldName + " : " + fieldType)
+                if(optional) {
+                    option
+                } else {
+                    if(option.isEmpty) return None
+                    option.get
+                }
+            }
+            val mirror = runtimeMirror(getClass.getClassLoader)
+            val companionClass = mirror.runtimeClass(companion)
+            val companionInstance = companionClass.newInstance()
+            val applyMethod = companionClass.getMethods.find(_.getName == "apply").get
+            val result = applyMethod.invoke(companionInstance, values.map(_.asInstanceOf[AnyRef]) : _*)
+            Some(result.asInstanceOf[T])
         }
     }
 }

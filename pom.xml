@@ -57,6 +57,11 @@
             <artifactId>annotations</artifactId>
             <version>9.0.4</version>
         </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+            <version>2.11.8</version>
+        </dependency>
     </dependencies>
 
     <build>
