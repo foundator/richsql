@@ -248,7 +248,9 @@ object RichSql {
             get(_.getBinaryStream(columnLabel))
         }
 
-        def getObject[T <: Product : TypeTag](prefix : String = "") : Option[T] = {
+        def getObject[T <: Product : TypeTag] : Option[T] = getPrefixedObject[T]("")
+
+        def getPrefixedObject[T <: Product : TypeTag](prefix : String) : Option[T] = {
             val companion = typeOf[T].companion
             val apply = companion.member(TermName("apply")).asMethod
             val fields = for {
