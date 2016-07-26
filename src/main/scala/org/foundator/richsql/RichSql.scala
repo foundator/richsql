@@ -132,6 +132,16 @@ object RichSql {
 
     object Implicits {
 
+        /**
+          * An ID pointing to a specific database table T.
+          * It's supported by RichSql and is treated as a Long.
+          */
+        class Id[T](val value : Long) extends AnyVal
+
+        object Id {
+            def apply[T](value : Long) : Id[T] = new Id(value)
+        }
+
         implicit class SqlInterpolator(@Language("SQL") val sc : StringContext) extends AnyVal {
             def sql(arguments : Value*) : SqlLiteral = {
                 val strings = sc.parts.iterator
@@ -145,6 +155,7 @@ object RichSql {
             }
         }
 
+        implicit def idValue(value : Id[_]) : Value = new Value(value.value)
         implicit def booleanValue(value : Boolean) : Value = new Value(value)
         implicit def stringValue(value : String) : Value = new Value(value)
         implicit def intValue(value : Int) : Value = new Value(value)
@@ -155,6 +166,7 @@ object RichSql {
         implicit def uuidValue(value : UUID) : Value = new Value(value)
         implicit def arrayValue[T](value : Array[T])(implicit toElementType : ArrayType[T]) : Value = new Value(value -> toElementType)
 
+        implicit def idType = ScalarType[Long](Types.BIGINT)
         implicit def booleanType = ScalarType[Boolean](Types.BOOLEAN)
         implicit def stringType = ScalarType[String](Types.VARCHAR)
         implicit def intType = ScalarType[Int](Types.INTEGER)
