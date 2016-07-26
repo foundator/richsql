@@ -266,20 +266,21 @@ object RichSql {
                 prefixed -> (fieldType, optional)
             }
             val values = for((fieldName, (fieldType, optional)) <- fields) yield {
+                val runtimeType = if(fieldType.baseClasses == List(typeOf[AnyVal].typeSymbol)) fieldType.members.head.info
                 val option =
-                    if(fieldType == typeOf[List[String]]) getStringArray(fieldName).map(_.toList)
-                    else if(fieldType == typeOf[Seq[String]]) getStringArray(fieldName).map(_.toSeq)
-                    else if(fieldType == typeOf[Set[String]]) getStringArray(fieldName).map(_.toSet)
-                    else if(fieldType == typeOf[Array[String]]) getStringArray(fieldName)
-                    else if(fieldType == typeOf[Boolean]) getBoolean(fieldName)
-                    else if(fieldType == typeOf[UUID]) getUuid(fieldName)
-                    else if(fieldType == typeOf[String]) getString(fieldName)
-                    else if(fieldType == typeOf[Int]) getInt(fieldName)
-                    else if(fieldType == typeOf[Long]) getLong(fieldName)
-                    else if(fieldType == typeOf[Double]) getDouble(fieldName)
-                    else if(fieldType == typeOf[Timestamp]) getTimestamp(fieldName)
-                    else if(fieldType == typeOf[Instant]) getInstant(fieldName)
-                    else throw new RuntimeException("Unsupported object field: " + fieldName + " : " + fieldType)
+                    if(runtimeType == typeOf[List[String]]) getStringArray(fieldName).map(_.toList)
+                    else if(runtimeType == typeOf[Seq[String]]) getStringArray(fieldName).map(_.toSeq)
+                    else if(runtimeType == typeOf[Set[String]]) getStringArray(fieldName).map(_.toSet)
+                    else if(runtimeType == typeOf[Array[String]]) getStringArray(fieldName)
+                    else if(runtimeType == typeOf[Boolean]) getBoolean(fieldName)
+                    else if(runtimeType == typeOf[UUID]) getUuid(fieldName)
+                    else if(runtimeType == typeOf[String]) getString(fieldName)
+                    else if(runtimeType == typeOf[Int]) getInt(fieldName)
+                    else if(runtimeType == typeOf[Long]) getLong(fieldName)
+                    else if(runtimeType == typeOf[Double]) getDouble(fieldName)
+                    else if(runtimeType == typeOf[Timestamp]) getTimestamp(fieldName)
+                    else if(runtimeType == typeOf[Instant]) getInstant(fieldName)
+                    else throw new RuntimeException("Unsupported object field: " + fieldName + " : " + runtimeType)
                 if(optional) {
                     option
                 } else {
