@@ -170,7 +170,7 @@ object RichSql {
         implicit def uuidValue(value : UUID) : Value = new Value(value)
         implicit def arrayValue[T](value : Array[T])(implicit toElementType : ArrayType[T]) : Value = new Value(value -> toElementType)
 
-        implicit def idType = ScalarType[Long](Types.BIGINT)
+        implicit def idType = ScalarType[Id.type](Types.BIGINT)
         implicit def booleanType = ScalarType[Boolean](Types.BOOLEAN)
         implicit def stringType = ScalarType[String](Types.VARCHAR)
         implicit def intType = ScalarType[Int](Types.INTEGER)
