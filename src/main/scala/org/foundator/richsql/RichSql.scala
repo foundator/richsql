@@ -5,10 +5,14 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import java.sql._
+
+import org.foundator.richsql.RichSql.Implicits.Id
+
 import scala.Array
 import scala.collection.mutable.ListBuffer
 import org.joda.time.{Instant, ReadableInstant}
 import org.intellij.lang.annotations.Language
+
 import scala.reflect.runtime.universe._
 
 object RichSql {
@@ -259,6 +263,10 @@ object RichSql {
         def getInputStream(columnLabel: String): Option[InputStream] = {
             get(_.getBinaryStream(columnLabel))
         }
+
+        def getId[T <: Id[_]](columnLabel : String) : Option[T] = getIdOf(columnLabel).asInstanceOf[Option[T]]
+
+        def getIdOf[T](columnLabel : String) : Option[Id[T]] = get(_.getLong(columnLabel)).map(id => Id[T](id))
 
         def getObject[T <: Product : TypeTag] : Option[T] = getPrefixedObject[T]("")
 
