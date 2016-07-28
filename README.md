@@ -4,12 +4,12 @@
 
 ## Example
 
-    val users : List[User] =
+    val users : User =
         connection.map(sql"""
             select id, name, email
             from "User"
             where id = ${userId}
-        """) { row => row.getObject[User].get }
+        """) { row => row.getObject[User].get }.head
   
 The interface is *somewhat* typesafe. The program will only compile when your placeholders, eg. `${userId}`, have a type that can be automatically converted to an SQL compatible value.
 
