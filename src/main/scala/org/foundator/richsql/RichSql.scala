@@ -220,8 +220,7 @@ object RichSql {
             /** Batches the statement, so it can be called multiple times */
             def batch(
                 @Language("SQL")
-                statement : String,
-                parameters : Value*
+                statement : String
             )(useBatch : Batch => Unit) : Array[Int] = {
                 RichSql.batch(connection.prepareStatement(statement))(useBatch)
             }
@@ -229,7 +228,6 @@ object RichSql {
             def map[T](sql : SqlLiteral)(mapper : Row => T) : List[T] = map(sql.sql, sql.parameters : _*)(mapper)
             def count[T](sql : SqlLiteral) : Int = count(sql.sql, sql.parameters : _*)
             def each[T](sql : SqlLiteral)(mapper : Row => Unit) : Unit = each(sql.sql, sql.parameters : _*)(mapper)
-            def batch[T](sql : SqlLiteral)(useBatch : Batch => Unit) : Unit = batch(sql.sql, sql.parameters : _*)(useBatch)
         }
     }
 
