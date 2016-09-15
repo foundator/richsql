@@ -315,8 +315,9 @@ object RichSql {
             }
             val companionClass = mirror.runtimeClass(companion)
             val companionInstance = companionClass.newInstance()
-            val applyMethod = companionClass.getMethods.find(_.getName == "apply").get
-            val result = applyMethod.invoke(companionInstance, values.map(_.asInstanceOf[AnyRef]) : _*)
+            val objectClass = classOf[Object]
+            val methods = companionClass.getMethods.filter(_.getName == "apply").sortBy(- _.getParameterTypes.count(_ == objectClass))
+            val result = methods.head.invoke(companionInstance, values.map(_.asInstanceOf[AnyRef]) : _*)
             Some(result.asInstanceOf[T])
         }
     }
