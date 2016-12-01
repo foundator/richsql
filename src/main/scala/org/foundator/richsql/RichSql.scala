@@ -117,6 +117,10 @@ object RichSql {
                 val longArray : Array[AnyRef] = o.map(v => long2Long(v) : AnyRef)
                 val sqlArray = statement.getConnection.createArrayOf(typeString, longArray)
                 statement.setArray(i + 1, sqlArray)
+            case (o : Array[Double], ArrayType(typeString@"double precision")) =>
+                val doubleArray : Array[AnyRef] = o.map(v => double2Double(v) : AnyRef)
+                val sqlArray = statement.getConnection.createArrayOf(typeString, doubleArray)
+                statement.setArray(i + 1, sqlArray)
             case (o, ScalarType(jdbcType)) => statement.setObject(i + 1, o, jdbcType)
             case o : ReadableInstant => statement.setTimestamp(i + 1, new Timestamp(o.getMillis))
             case p@(o, t) => throw new RuntimeException(s"Error in RichSql, bad value pair $p of type (${o.getClass}, ${t.getClass})")
@@ -181,6 +185,7 @@ object RichSql {
         implicit def readableInstantType = ScalarType[ReadableInstant](Types.TIMESTAMP)
         implicit def stringArrayType = ArrayType[String]("text")
         implicit def longArrayType = ArrayType[Long]("bigint")
+        implicit def doubleArrayType = ArrayType[Long]("double precision")
         implicit def byteArrayType = ArrayType[Byte]("byte") // Note "byte" is not a Postgres type but our own.
 
         def nullable[T](option : Option[T])(implicit toValue : T => Value, toType : Type[T]) = {
@@ -258,6 +263,10 @@ object RichSql {
             get(_.getArray(columnLabel)).map(_.getArray.asInstanceOf[Array[String]])
         }
 
+        def getDoubleArray(columnLabel: String): Option[Array[Double]] = {
+            get(_.getArray(columnLabel)).map(_.getArray.asInstanceOf[Array[Double]])
+        }
+
         def getInputStream(columnLabel: String): Option[InputStream] = {
             get(_.getBinaryStream(columnLabel))
         }
@@ -291,6 +300,10 @@ object RichSql {
                     else if(runtimeType == typeOf[Seq[String]]) getStringArray(fieldName).map(_.toSeq)
                     else if(runtimeType == typeOf[Set[String]]) getStringArray(fieldName).map(_.toSet)
                     else if(runtimeType == typeOf[Array[String]]) getStringArray(fieldName)
+                    else if(runtimeType == typeOf[List[Double]]) getDoubleArray(fieldName)
+                    else if(runtimeType == typeOf[Seq[Double]]) getDoubleArray(fieldName)
+                    else if(runtimeType == typeOf[Set[Double]]) getDoubleArray(fieldName)
+                    else if(runtimeType == typeOf[Array[Double]]) getDoubleArray(fieldName)
                     else if(runtimeType == typeOf[Boolean]) getBoolean(fieldName)
                     else if(runtimeType == typeOf[UUID]) getUuid(fieldName)
                     else if(runtimeType == typeOf[String]) getString(fieldName)
