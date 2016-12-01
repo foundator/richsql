@@ -185,7 +185,7 @@ object RichSql {
         implicit def readableInstantType = ScalarType[ReadableInstant](Types.TIMESTAMP)
         implicit def stringArrayType = ArrayType[String]("text")
         implicit def longArrayType = ArrayType[Long]("bigint")
-        implicit def doubleArrayType = ArrayType[Long]("double precision")
+        implicit def doubleArrayType = ArrayType[Double]("double precision")
         implicit def byteArrayType = ArrayType[Byte]("byte") // Note "byte" is not a Postgres type but our own.
 
         def nullable[T](option : Option[T])(implicit toValue : T => Value, toType : Type[T]) = {
