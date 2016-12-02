@@ -117,7 +117,7 @@ object RichSql {
                 val longArray : Array[AnyRef] = o.map(v => long2Long(v) : AnyRef)
                 val sqlArray = statement.getConnection.createArrayOf(typeString, longArray)
                 statement.setArray(i + 1, sqlArray)
-            case (o : Array[Double], ArrayType(typeString@"double precision")) =>
+            case (o : Array[Double], ArrayType(typeString@"float8")) =>
                 val doubleArray : Array[AnyRef] = o.map(v => double2Double(v) : AnyRef)
                 val sqlArray = statement.getConnection.createArrayOf(typeString, doubleArray)
                 statement.setArray(i + 1, sqlArray)
@@ -185,7 +185,7 @@ object RichSql {
         implicit def readableInstantType = ScalarType[ReadableInstant](Types.TIMESTAMP)
         implicit def stringArrayType = ArrayType[String]("text")
         implicit def longArrayType = ArrayType[Long]("bigint")
-        implicit def doubleArrayType = ArrayType[Double]("double precision")
+        implicit def doubleArrayType = ArrayType[Double]("float8")
         implicit def byteArrayType = ArrayType[Byte]("byte") // Note "byte" is not a Postgres type but our own.
 
         def nullable[T](option : Option[T])(implicit toValue : T => Value, toType : Type[T]) = {
@@ -264,7 +264,10 @@ object RichSql {
         }
 
         def getDoubleArray(columnLabel: String): Option[Array[Double]] = {
-            get(_.getArray(columnLabel)).map(_.getArray.asInstanceOf[Array[Double]])
+            get(_.getArray(columnLabel)).map{a =>
+                val javaArray = a.getArray.asInstanceOf[Array[java.lang.Double]]
+                javaArray.map(Double2double)
+            }
         }
 
         def getInputStream(columnLabel: String): Option[InputStream] = {
