@@ -6,15 +6,15 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.12</scala.version>
-        <scala.fullVersion>2.12.4</scala.fullVersion>
+        <scala.version>2.11</scala.version>
+        <scala.fullVersion>2.11.8</scala.fullVersion>
     </properties>
 
     <groupId>org.foundator</groupId>
     <artifactId>foundator-richsql</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>richsql</name>
+    <name>richsql_2.11.8</name>
     <description>A simple Scala library for invoking SQL queries and data manipulations</description>
     <url>https://github.com/foundator/rich-sql</url>
     <licenses>
