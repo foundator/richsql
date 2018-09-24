@@ -11,7 +11,7 @@
     </properties>
 
     <groupId>org.foundator</groupId>
-    <artifactId>foundator-richsql</artifactId>
+    <artifactId>foundator-richsql_2.11</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>richsql_2.11</name>
